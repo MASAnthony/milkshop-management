@@ -1,0 +1,38 @@
+{
+  "header": {
+    "title": "Milk Delivery Admin"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "customers": "Customers",
+    "orders": "Orders",
+    "subscriptions": "Subscriptions",
+    "products": "Products",
+    "reports": "Reports",
+    "settings": "Settings",
+    "login": "Login",
+    "logout": "Logout",
+    "profile": "Profile"
+  },
+  "actions": {
+    "placeOrder": "Place Order",
+    "cancelOrder": "Cancel Order",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "common": {
+    "deliverySchedule": "Delivery Schedule",
+    "morningShift": "Morning Shift",
+    "eveningShift": "Evening Shift"
+  },
+  "validation": {
+    "orderPlacementTimeEnded": "Order placement time has ended.",
+    "orderCancellationNotAllowed": "Order cancellation is no longer allowed."
+  },
+  "products": {
+    "nativeCowMilk": "Native Cow Milk",
+    "jerseyCowMilk": "Jersey Cow Milk"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "header": {
+    "title": "பால் விநியோக நிர்வாகம்"
+  },
+  "nav": {
+    "dashboard": "முகப்பு",
+    "customers": "வாடிக்கையாளர்கள்",
+    "orders": "ஆர்டர்கள்",
+    "subscriptions": "சந்தாக்கள்",
+    "products": "தயாரிப்புகள்",
+    "reports": "அறிக்கைகள்",
+    "settings": "அமைப்புகள்",
+    "login": "உள்நுழை",
+    "logout": "வெளியேறு",
+    "profile": "சுயவிவரம்"
+  },
+  "actions": {
+    "placeOrder": "ஆர்டர் செய்",
+    "cancelOrder": "ஆர்டரை ரத்து செய்",
+    "save": "சேமி",
+    "cancel": "ரத்து செய்",
+    "edit": "திருத்து",
+    "delete": "நீக்கு"
+  },
+  "common": {
+    "deliverySchedule": "விநியோக அட்டவணை",
+    "morningShift": "காலை பணி",
+    "eveningShift": "மாலை பணி"
+  },
+  "validation": {
+    "orderPlacementTimeEnded": "ஆர்டர் செய்யும் நேரம் முடிந்துவிட்டது.",
+    "orderCancellationNotAllowed": "ஆர்டரை ரத்து செய்யும் நேரம் முடிந்துவிட்டது."
+  },
+  "products": {
+    "nativeCowMilk": "நாட்டு மாட்டு பால்",
+    "jerseyCowMilk": "ஜெர்சி பசு பால்"
+  }
+}
