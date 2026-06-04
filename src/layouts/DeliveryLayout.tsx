@@ -1,10 +1,10 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { LayoutDashboard, LogOut } from 'lucide-react';
+import { Truck, LogOut } from 'lucide-react';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import { useStore } from '../context/StoreContext';
 
-export default function AdminLayout() {
+export default function DeliveryLayout() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { currentUser, logout } = useStore();
@@ -25,16 +25,13 @@ export default function AdminLayout() {
               style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }}
             />
           ) : (
-            <LayoutDashboard size={24} />
+            <Truck size={24} />
           )}
-          <span>{currentUser?.name || t('header.title')} (Admin)</span>
+          <span>{currentUser?.name || 'Delivery'} (Delivery Boy)</span>
         </div>
         
         <nav className="nav-menu">
-          <NavLink to="/admin" end className="nav-link">{t('nav.dashboard')}</NavLink>
-          <NavLink to="/admin/customers" className="nav-link">Users</NavLink>
-          <NavLink to="/admin/orders" className="nav-link">{t('nav.orders')}</NavLink>
-          <NavLink to="/admin/products" className="nav-link">{t('nav.products')}</NavLink>
+          <NavLink to="/delivery" end className="nav-link">{t('nav.dashboard')}</NavLink>
           <button className="btn btn-secondary" onClick={handleLogout} style={{ padding: '0.4rem 0.8rem', marginLeft: '1rem' }}>
             <LogOut size={16} />
             {t('nav.logout')}
