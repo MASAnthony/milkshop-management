@@ -1,19 +1,20 @@
 import { useTranslation } from 'react-i18next';
 import { useStore } from '../context/StoreContext';
 import { format } from 'date-fns';
-import { ShoppingCart, CheckCircle, AlertCircle } from 'lucide-react';
+import { ShoppingCart, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 
 export default function AdminOrders() {
   const { t, i18n } = useTranslation();
-  const { orders, products, users, updateOrderStatus, assignOrder } = useStore();
+  const { orders, subscriptions, products, users, updateOrderStatus, assignOrder } = useStore();
 
   const deliveryBoys = users.filter(u => u.role === 'delivery_boy');
-
   const sortedOrders = [...orders].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const getProductName = (productId: string) => {
     const product = products.find(p => p.id === productId);
-    return product ? (i18n.language === 'ta' ? product.name.ta : product.name.en) : 'Unknown';
+    if (!product || !product.name) return 'Unknown';
+    if (typeof product.name === 'string') return product.name;
+    return i18n.language === 'ta' ? product.name.ta : product.name.en;
   };
 
   const getCustomerName = (customerId: string) => {
@@ -23,23 +24,19 @@ export default function AdminOrders() {
 
   const pendingOrders = orders.filter(o => o.status === 'Pending').length;
   const deliveredOrders = orders.filter(o => o.status === 'Delivered').length;
+  const activeSubs = subscriptions.filter(s => s.status === 'Active').length;
 
   return (
     <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
         <div>
-          <h2 style={{ fontSize: '1.8rem', color: 'var(--text-primary)', marginBottom: '0.2rem' }}>{t('nav.orders')} Management</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>View and update customer orders</p>
+          <h2 style={{ fontSize: '2rem', color: 'var(--text-primary)', marginBottom: '0.2rem', fontWeight: 700 }}>{t('nav.orders')} Management</h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>View orders and daily subscriptions</p>
         </div>
       </div>
 
       {/* Metric Cards */}
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', 
-        gap: '1.5rem', 
-        marginBottom: '2rem' 
-      }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
         <div className="metric-card" style={metricCardStyle('linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)')}>
           <div style={metricIconWrapperStyle('rgba(255,255,255,0.2)')}>
             <ShoppingCart size={24} color="#fff" />
@@ -72,103 +69,115 @@ export default function AdminOrders() {
           </div>
           <CheckCircle size={40} color="rgba(255,255,255,0.1)" style={metricBgIconStyle} />
         </div>
+
+        <div className="metric-card" style={metricCardStyle('linear-gradient(135deg, #ec4899 0%, #db2777 100%)')}>
+          <div style={metricIconWrapperStyle('rgba(255,255,255,0.2)')}>
+            <RefreshCw size={24} color="#fff" />
+          </div>
+          <div style={metricContentStyle}>
+            <p style={metricLabelStyle}>Active Subscriptions</p>
+            <h3 style={metricValueStyle}>{activeSubs}</h3>
+          </div>
+          <RefreshCw size={40} color="rgba(255,255,255,0.1)" style={metricBgIconStyle} />
+        </div>
       </div>
       
-      {sortedOrders.length === 0 ? (
-        <p style={{ color: 'var(--text-secondary)' }}>No orders have been placed yet.</p>
-      ) : (
-        <div style={{ background: 'var(--surface-color)', borderRadius: '12px', padding: '1rem', overflowX: 'auto' }}>
-          <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
-                <th style={{ padding: '1rem 0' }}>Order ID</th>
-                <th style={{ padding: '1rem 0' }}>Customer</th>
-                <th style={{ padding: '1rem 0' }}>Product</th>
-                <th style={{ padding: '1rem 0' }}>Date</th>
-                <th style={{ padding: '1rem 0' }}>Delivery Boy</th>
-                <th style={{ padding: '1rem 0' }}>Status</th>
-                <th style={{ padding: '1rem 0' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sortedOrders.map(order => (
-                <tr key={order.id} style={{ borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
-                  <td style={{ padding: '1rem 0', fontWeight: 500 }}>{order.id}</td>
-                  <td style={{ padding: '1rem 0' }}>{getCustomerName(order.customerId)}</td>
-                  <td style={{ padding: '1rem 0' }}>{getProductName(order.productId)}</td>
-                  <td style={{ padding: '1rem 0' }}>{format(new Date(order.date), 'dd MMM yyyy')}</td>
-                  <td style={{ padding: '1rem 0' }}>
-                    <select 
-                      value={order.deliveryBoyId || ''} 
-                      onChange={(e) => assignOrder(order.id, e.target.value)}
-                      disabled={order.status === 'Delivered'}
-                      style={{
-                        padding: '0.4rem', borderRadius: '4px',
-                        border: '1px solid rgba(156, 163, 175, 0.4)',
-                        background: 'transparent', color: 'var(--text-primary)',
-                        opacity: order.status === 'Delivered' ? 0.6 : 1
-                      }}
-                    >
-                      <option value="">Unassigned</option>
-                      {deliveryBoys.map(db => (
-                        <option key={db.id} value={db.id}>{db.name}</option>
-                      ))}
-                    </select>
-                  </td>
-                  <td style={{ padding: '1rem 0' }}>
-                    <span style={{
-                      padding: '0.25rem 0.5rem',
-                      borderRadius: '4px',
-                      fontSize: '0.85rem',
-                      backgroundColor: order.status === 'Pending' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(16, 185, 129, 0.2)',
-                      color: order.status === 'Pending' ? '#d97706' : '#10b981'
-                    }}>
-                      {order.status}
-                    </span>
-                  </td>
-                  <td style={{ padding: '1rem 0', display: 'flex', gap: '0.5rem' }}>
-                    {order.status === 'Pending' ? (
-                      <button 
-                        className="btn" 
-                        style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem' }}
-                        onClick={() => updateOrderStatus(order.id, 'Delivered')}
-                      >
-                        Mark Delivered
-                      </button>
-                    ) : (
-                      <button 
-                        className="btn btn-secondary" 
-                        style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem' }}
-                        onClick={() => updateOrderStatus(order.id, 'Pending')}
-                      >
-                        Revert to Pending
-                      </button>
-                    )}
-                  </td>
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <h3 style={{ padding: '1.5rem', borderBottom: '1px solid var(--surface-border)', fontSize: '1.25rem', fontWeight: 600 }}>All Orders</h3>
+        {sortedOrders.length === 0 ? (
+          <p style={{ padding: '1.5rem', color: 'var(--text-secondary)' }}>No orders have been placed yet.</p>
+        ) : (
+          <div className="table-container" style={{ border: 'none', boxShadow: 'none', borderRadius: 0 }}>
+            <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  <th style={{ padding: '1rem 1.5rem' }}>Order ID</th>
+                  <th style={{ padding: '1rem 1.5rem' }}>Customer & Address</th>
+                  <th style={{ padding: '1rem 1.5rem' }}>Product Info</th>
+                  <th style={{ padding: '1rem 1.5rem' }}>Payment</th>
+                  <th style={{ padding: '1rem 1.5rem' }}>Delivery Boy</th>
+                  <th style={{ padding: '1rem 1.5rem' }}>Status</th>
+                  <th style={{ padding: '1rem 1.5rem' }}>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
+              <tbody>
+                {sortedOrders.map(order => (
+                  <tr key={order.id}>
+                    <td style={{ padding: '1rem 1.5rem', fontWeight: 600 }}>
+                      #{order.id.toUpperCase()}
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', fontWeight: 400, marginTop: '0.2rem' }}>
+                        {format(new Date(order.date), 'dd MMM, HH:mm')}
+                      </div>
+                    </td>
+                    <td style={{ padding: '1rem 1.5rem' }}>
+                      <div style={{ fontWeight: 500 }}>{getCustomerName(order.customerId)}</div>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>{order.deliveryAddress}</div>
+                    </td>
+                    <td style={{ padding: '1rem 1.5rem' }}>
+                      <div style={{ fontWeight: 500 }}>{getProductName(order.productId)}</div>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>Qty: {order.quantity} | ₹{order.totalAmount}</div>
+                    </td>
+                    <td style={{ padding: '1rem 1.5rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span className={`badge badge-${order.paymentStatus === 'Paid' ? 'success' : 'warning'}`}>{order.paymentStatus}</span>
+                        <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{order.paymentMethod}</span>
+                      </div>
+                    </td>
+                    <td style={{ padding: '1rem 1.5rem' }}>
+                      <select 
+                        className="form-select"
+                        value={order.deliveryBoyId || ''} 
+                        onChange={(e) => assignOrder(order.id, e.target.value)}
+                        disabled={order.status === 'Delivered' || order.status === 'Cancelled'}
+                        style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem' }}
+                      >
+                        <option value="">Unassigned</option>
+                        {deliveryBoys.map(db => (
+                          <option key={db.id} value={db.id}>{db.name} {db.assignedRoute ? `(${db.assignedRoute})` : ''}</option>
+                        ))}
+                      </select>
+                    </td>
+                    <td style={{ padding: '1rem 1.5rem' }}>
+                      <span className={`badge badge-${order.status === 'Pending' ? 'warning' : order.status === 'Delivered' ? 'success' : order.status === 'Failed' || order.status === 'Cancelled' ? 'danger' : 'primary'}`}>
+                        {order.status}
+                      </span>
+                    </td>
+                    <td style={{ padding: '1rem 1.5rem', display: 'flex', gap: '0.5rem' }}>
+                      {order.status === 'Pending' ? (
+                        <button className="btn" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }} onClick={() => updateOrderStatus(order.id, 'Out for Delivery')}>
+                          Ship
+                        </button>
+                      ) : order.status === 'Out for Delivery' ? (
+                        <button className="btn" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }} onClick={() => updateOrderStatus(order.id, 'Delivered')}>
+                          Complete
+                        </button>
+                      ) : (
+                        <button className="btn btn-secondary" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }} onClick={() => updateOrderStatus(order.id, 'Pending')} disabled={order.status === 'Cancelled'}>
+                          Reset
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
 
       <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
         .metric-card {
           position: relative;
           overflow: hidden;
           padding: 1.5rem;
-          border-radius: 16px;
+          border-radius: var(--border-radius);
           color: white;
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-          transition: transform 0.3s ease, box-shadow 0.3s ease;
+          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+          transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
         }
         .metric-card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+          transform: translateY(-5px) scale(1.02);
+          box-shadow: 0 20px 30px -5px rgba(0, 0, 0, 0.25);
         }
       `}</style>
     </div>
@@ -177,44 +186,25 @@ export default function AdminOrders() {
 
 // Inline Styles for metrics
 const metricCardStyle = (background: string): React.CSSProperties => ({
-  background,
-  display: 'flex',
-  alignItems: 'center',
-  gap: '1.2rem',
+  background, display: 'flex', alignItems: 'center', gap: '1.2rem',
 });
 
 const metricIconWrapperStyle = (bg: string): React.CSSProperties => ({
-  background: bg,
-  padding: '1rem',
-  borderRadius: '12px',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center'
+  background: bg, padding: '1rem', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)'
 });
 
 const metricContentStyle: React.CSSProperties = {
-  zIndex: 1,
-  position: 'relative'
+  zIndex: 1, position: 'relative', flex: 1, minWidth: 0
 };
 
 const metricLabelStyle: React.CSSProperties = {
-  fontSize: '0.9rem',
-  fontWeight: 500,
-  opacity: 0.9,
-  marginBottom: '0.2rem'
+  fontSize: '0.95rem', fontWeight: 500, opacity: 0.9, marginBottom: '0.2rem'
 };
 
 const metricValueStyle: React.CSSProperties = {
-  fontSize: '1.8rem',
-  fontWeight: 700,
-  margin: 0
+  fontSize: '2rem', fontWeight: 700, margin: 0, letterSpacing: '-0.02em'
 };
 
 const metricBgIconStyle: React.CSSProperties = {
-  position: 'absolute',
-  right: '-10px',
-  bottom: '-10px',
-  transform: 'scale(2.5)',
-  opacity: 0.2,
-  zIndex: 0
+  position: 'absolute', right: '-15px', bottom: '-15px', transform: 'scale(2.5)', opacity: 0.15, zIndex: 0
 };

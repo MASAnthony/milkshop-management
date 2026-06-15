@@ -4,12 +4,12 @@ import { format } from 'date-fns';
 import { enUS, ta } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
-import { ShoppingCart, Users, Package, Clock, TrendingUp, CheckCircle, AlertCircle } from 'lucide-react';
+import { ShoppingCart, Users, Package, Clock, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-  const { orders, users, products } = useStore();
+  const { orders, users, products, subscriptions } = useStore();
   const [currentDate] = useState(new Date());
   const currentLocale = i18n.language === 'ta' ? ta : enUS;
 
@@ -17,6 +17,7 @@ export default function AdminDashboard() {
   const totalCustomers = users.filter(u => u.role === 'customer').length;
   const pendingOrders = orders.filter(o => o.status === 'Pending').length;
   const deliveredOrders = orders.filter(o => o.status === 'Delivered').length;
+  const activeSubscriptions = subscriptions.filter(s => s.status === 'Active').length;
   
   const recentOrders = [...orders].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
 
@@ -33,23 +34,25 @@ export default function AdminDashboard() {
 
   return (
     <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
         <div>
-          <h2 style={{ fontSize: '1.8rem', color: 'var(--text-primary)', marginBottom: '0.2rem' }}>{t('nav.dashboard')}</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>Overview of your milk shop's performance</p>
+          <h2 style={{ fontSize: '2rem', color: 'var(--text-primary)', marginBottom: '0.2rem', fontWeight: 700 }}>{t('nav.dashboard')}</h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>Overview of your milk shop's performance</p>
         </div>
         <div style={{ 
           background: 'var(--surface-color)', 
-          padding: '0.5rem 1rem', 
-          borderRadius: '8px', 
-          boxShadow: 'var(--box-shadow)',
+          padding: '0.75rem 1.25rem', 
+          borderRadius: '12px', 
+          boxShadow: 'var(--glass-shadow)',
+          backdropFilter: 'blur(16px)',
+          border: '1px solid var(--surface-border)',
           color: 'var(--primary-color)', 
           fontWeight: 600,
           display: 'flex',
           alignItems: 'center',
-          gap: '0.5rem'
+          gap: '0.75rem'
         }}>
-          <Clock size={18} />
+          <Clock size={20} />
           {format(currentDate, 'dd MMMM yyyy', { locale: currentLocale })}
         </div>
       </div>
@@ -57,19 +60,19 @@ export default function AdminDashboard() {
       {/* Metric Cards */}
       <div style={{ 
         display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', 
         gap: '1.5rem', 
-        marginBottom: '2rem' 
+        marginBottom: '2.5rem' 
       }}>
-        <div className="metric-card" style={metricCardStyle('linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)')}>
+        <div className="metric-card" style={metricCardStyle('linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)')}>
           <div style={metricIconWrapperStyle('rgba(255,255,255,0.2)')}>
-            <ShoppingCart size={24} color="#fff" />
+            <RefreshCw size={24} color="#fff" />
           </div>
           <div style={metricContentStyle}>
-            <p style={metricLabelStyle}>Total Orders</p>
-            <h3 style={metricValueStyle}>{orders.length}</h3>
+            <p style={metricLabelStyle}>Active Subs</p>
+            <h3 style={metricValueStyle}>{activeSubscriptions}</h3>
           </div>
-          <TrendingUp size={40} color="rgba(255,255,255,0.1)" style={metricBgIconStyle} />
+          <RefreshCw size={40} color="rgba(255,255,255,0.1)" style={metricBgIconStyle} />
         </div>
 
         <div className="metric-card" style={metricCardStyle('linear-gradient(135deg, #f59e0b 0%, #d97706 100%)')}>
@@ -88,13 +91,13 @@ export default function AdminDashboard() {
             <CheckCircle size={24} color="#fff" />
           </div>
           <div style={metricContentStyle}>
-            <p style={metricLabelStyle}>Delivered</p>
+            <p style={metricLabelStyle}>Delivered Today</p>
             <h3 style={metricValueStyle}>{deliveredOrders}</h3>
           </div>
           <CheckCircle size={40} color="rgba(255,255,255,0.1)" style={metricBgIconStyle} />
         </div>
 
-        <div className="metric-card" style={metricCardStyle('linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)')}>
+        <div className="metric-card" style={metricCardStyle('linear-gradient(135deg, #ec4899 0%, #db2777 100%)')}>
           <div style={metricIconWrapperStyle('rgba(255,255,255,0.2)')}>
             <Users size={24} color="#fff" />
           </div>
@@ -106,14 +109,14 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '2rem' }}>
         {/* Recent Orders Table */}
-        <div className="card" style={{ padding: '1.5rem 0' }}>
+        <div className="card" style={{ padding: '1.5rem 0', display: 'block' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 1.5rem', marginBottom: '1.5rem' }}>
-            <h3 style={{ fontSize: '1.2rem' }}>Recent Orders</h3>
+            <h3 style={{ fontSize: '1.3rem', fontWeight: 600 }}>Recent Orders</h3>
             <button 
               onClick={() => navigate('/admin/orders')}
-              style={{ background: 'none', border: 'none', color: 'var(--primary-color)', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}
+              style={{ background: 'none', border: 'none', color: 'var(--primary-color)', fontWeight: 600, cursor: 'pointer', fontSize: '0.95rem' }}
             >
               View All
             </button>
@@ -122,31 +125,26 @@ export default function AdminDashboard() {
           {recentOrders.length === 0 ? (
             <p style={{ color: 'var(--text-secondary)', padding: '0 1.5rem' }}>No orders placed yet.</p>
           ) : (
-            <div style={{ overflowX: 'auto' }}>
+            <div className="table-container" style={{ margin: '0 1.5rem', border: 'none', boxShadow: 'none', background: 'transparent' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                 <thead>
-                  <tr style={{ background: 'rgba(156, 163, 175, 0.05)', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
-                    <th style={{ padding: '0.75rem 1.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Order ID</th>
-                    <th style={{ padding: '0.75rem 1.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Customer</th>
-                    <th style={{ padding: '0.75rem 1.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Product</th>
-                    <th style={{ padding: '0.75rem 1.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Status</th>
+                  <tr style={{ borderBottom: '1px solid var(--surface-border)' }}>
+                    <th style={{ padding: '1rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Order ID</th>
+                    <th style={{ padding: '1rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Customer</th>
+                    <th style={{ padding: '1rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Product</th>
+                    <th style={{ padding: '1rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Amount</th>
+                    <th style={{ padding: '1rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {recentOrders.map((order, idx) => (
-                    <tr key={order.id} style={{ borderBottom: idx === recentOrders.length - 1 ? 'none' : '1px solid rgba(0,0,0,0.05)' }}>
-                      <td style={{ padding: '1rem 1.5rem', fontSize: '0.9rem', fontWeight: 500 }}>#{order.id.toUpperCase()}</td>
-                      <td style={{ padding: '1rem 1.5rem', fontSize: '0.9rem' }}>{getUserName(order.customerId)}</td>
-                      <td style={{ padding: '1rem 1.5rem', fontSize: '0.9rem' }}>{getProductName(order.productId)}</td>
-                      <td style={{ padding: '1rem 1.5rem' }}>
-                        <span style={{
-                          padding: '0.25rem 0.6rem',
-                          borderRadius: '20px',
-                          fontSize: '0.75rem',
-                          fontWeight: 600,
-                          backgroundColor: order.status === 'Pending' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(16, 185, 129, 0.15)',
-                          color: order.status === 'Pending' ? '#d97706' : '#10b981'
-                        }}>
+                    <tr key={order.id} style={{ borderBottom: idx === recentOrders.length - 1 ? 'none' : '1px solid var(--surface-border)' }}>
+                      <td style={{ padding: '1rem', fontSize: '0.95rem', fontWeight: 600 }}>#{order.id.toUpperCase()}</td>
+                      <td style={{ padding: '1rem', fontSize: '0.95rem' }}>{getUserName(order.customerId)}</td>
+                      <td style={{ padding: '1rem', fontSize: '0.95rem' }}>{getProductName(order.productId)} (x{order.quantity})</td>
+                      <td style={{ padding: '1rem', fontSize: '0.95rem', fontWeight: 600 }}>₹{order.totalAmount}</td>
+                      <td style={{ padding: '1rem' }}>
+                        <span className={`badge badge-${order.status === 'Pending' ? 'warning' : order.status === 'Delivered' ? 'success' : order.status === 'Failed' ? 'danger' : 'primary'}`}>
                           {order.status}
                         </span>
                       </td>
@@ -161,53 +159,58 @@ export default function AdminDashboard() {
         {/* Quick Actions & Stats */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <div className="card">
-            <h3 style={{ fontSize: '1.1rem', marginBottom: '1.2rem' }}>Quick Actions</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+            <h3 style={{ fontSize: '1.2rem', marginBottom: '1.2rem', fontWeight: 600 }}>Quick Actions</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <button className="btn" onClick={() => navigate('/admin/products')} style={{ width: '100%', display: 'flex', justifyContent: 'flex-start', gap: '1rem' }}>
-                <Package size={18} />
+                <Package size={20} />
                 Manage Products
               </button>
-              <button className="btn btn-secondary" onClick={() => navigate('/admin/customers')} style={{ width: '100%', display: 'flex', justifyContent: 'flex-start', gap: '1rem', background: 'transparent' }}>
-                <Users size={18} />
+              <button className="btn btn-secondary" onClick={() => navigate('/admin/customers')} style={{ width: '100%', display: 'flex', justifyContent: 'flex-start', gap: '1rem' }}>
+                <Users size={20} />
                 Manage Users
+              </button>
+              <button className="btn btn-secondary" onClick={() => navigate('/admin/orders')} style={{ width: '100%', display: 'flex', justifyContent: 'flex-start', gap: '1rem' }}>
+                <ShoppingCart size={20} />
+                View All Orders
               </button>
             </div>
           </div>
           
           <div className="card">
-            <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>System Status</h3>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.8rem', background: 'rgba(16, 185, 129, 0.05)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
-              <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 10px #10b981' }}></div>
-              <span style={{ color: '#059669', fontWeight: 500, fontSize: '0.95rem' }}>All Systems Operational</span>
+            <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', fontWeight: 600 }}>System Status</h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+              <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 12px #10b981', animation: 'pulse 2s infinite' }}></div>
+              <span style={{ color: '#059669', fontWeight: 600, fontSize: '1rem' }}>All Systems Operational</span>
             </div>
           </div>
         </div>
       </div>
       
       <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
+        @keyframes pulse {
+          0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+          70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+          100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
         }
         .metric-card {
           position: relative;
           overflow: hidden;
           padding: 1.5rem;
-          border-radius: 16px;
+          border-radius: var(--border-radius);
           color: white;
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-          transition: transform 0.3s ease, box-shadow 0.3s ease;
+          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+          transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
         }
         .metric-card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+          transform: translateY(-5px) scale(1.02);
+          box-shadow: 0 20px 30px -5px rgba(0, 0, 0, 0.25);
         }
       `}</style>
     </div>
   );
 }
 
-// Inline Styles for metrics to keep JSX clean
+// Inline Styles
 const metricCardStyle = (background: string): React.CSSProperties => ({
   background,
   display: 'flex',
@@ -218,10 +221,11 @@ const metricCardStyle = (background: string): React.CSSProperties => ({
 const metricIconWrapperStyle = (bg: string): React.CSSProperties => ({
   background: bg,
   padding: '1rem',
-  borderRadius: '12px',
+  borderRadius: '14px',
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'center'
+  justifyContent: 'center',
+  backdropFilter: 'blur(4px)'
 });
 
 const metricContentStyle: React.CSSProperties = {
@@ -230,23 +234,24 @@ const metricContentStyle: React.CSSProperties = {
 };
 
 const metricLabelStyle: React.CSSProperties = {
-  fontSize: '0.9rem',
+  fontSize: '0.95rem',
   fontWeight: 500,
   opacity: 0.9,
   marginBottom: '0.2rem'
 };
 
 const metricValueStyle: React.CSSProperties = {
-  fontSize: '1.8rem',
+  fontSize: '2rem',
   fontWeight: 700,
-  margin: 0
+  margin: 0,
+  letterSpacing: '-0.02em'
 };
 
 const metricBgIconStyle: React.CSSProperties = {
   position: 'absolute',
-  right: '-10px',
-  bottom: '-10px',
+  right: '-15px',
+  bottom: '-15px',
   transform: 'scale(2.5)',
-  opacity: 0.2,
+  opacity: 0.15,
   zIndex: 0
 };

@@ -11,14 +11,14 @@ export default function LanguageSwitcher() {
 
   return (
     <div className="language-switcher">
-      <Globe size={16} color="var(--text-secondary)" />
+      <Globe size={18} style={{ color: 'var(--text-secondary)', marginLeft: '0.25rem' }} />
       <button 
         className={`lang-btn ${i18n.language === 'en' ? 'active' : ''}`}
         onClick={() => changeLanguage('en')}
       >
         English
       </button>
-      <span style={{ color: 'var(--text-secondary)' }}>|</span>
+      <span style={{ color: 'var(--text-secondary)', margin: '0 0.25rem', opacity: 0.6 }}>|</span>
       <button 
         className={`lang-btn ${i18n.language === 'ta' ? 'active' : ''}`}
         onClick={() => changeLanguage('ta')}
